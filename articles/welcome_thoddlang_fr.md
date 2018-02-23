@@ -64,7 +64,7 @@ Les fonctions ***processor*** réprésentent le scope fonctionnelle pure de Thod
 
 OK, mais c'est quoi un ***processor*** ?
 
-Un ***processor*** est une fonction **pure** au sens mathématique du terme **n entrées, UNE sortie, pas d'effet de bord**.
+Un ***processor*** est une fonction **pure** au sens mathématique du terme : **n entrées, UNE sortie, PAS D'EFFET DE BORD**.
 
     processor increment (int nb, int pas) {
       return __add (nb, pas) ;
@@ -72,10 +72,46 @@ Un ***processor*** est une fonction **pure** au sens mathématique du terme **n 
 
 ### ***Builder***
 
-Les fonctions ***builder***, probablement la famille de fonctions qui risque de faire grincer des dents les puristes des langages fonctionnels
+Les fonctions ***builder***, probablement la famille de fonctions qui risque de faire grincer des dents les puristes des langages fonctionnels. Il s'agit de fonction permettant de construire une donnée en plusieurs étapes (plusieurs appel de fonction ***builder***), mais tout de même avec un contrôle pour garantir l'absence de tout effet de bord. En dehors d'un builder, la donnée construite sera immutable.
 
 ### ***Writer***
 
-### Définition d'un flux
+Comme son nom l'indique, un ***writer*** est un type de fonction permettant l'écriture de données dans un flux. Il existe un ***writer*** axiomatique par ***writer|listener*** axiomatique existant.
+
+## Définition d'un flux
+
+Un flux se compose de trois parties bien distinctes : 
+
+* un ***reader|listener***
+* un ***processor*** (optionnel)
+* un ***writer***
+
+Thodd fournit une syntaxe particulière pour la déclration d'un flux. 
+
+    flux address_csv_to_hash:
+        addr = listener read_file(string filename, int flags): string [[flags = 0]];
+        hash = processor address_to_hash(string addr): int [[addr = addr]] ;
+        writer write_file (string filename, int hash) : int [[filename = "hash.csv", hash = hash]] ;
+
+On peut combiner des flux entre eux en voyant un flux comme une source de donnée potentielle pour un autre flux. Dans notre exemple précédent nous avons déclarer le flux *address_csv_to_hash*. Celui ci peut peut être utilisé comme reader pour un autre flux. Le ***reader*** equivalent serait :
+
+    listener address_csv_to_hash (string filename, int flags) : int ;
+
+*address_csv_to_hash* est un ***listener*** car le flux sous-jacent commence par un ***listener***. La sortie est un ***int*** car la sortie du ***writer*** est ***int***. Quand aux arguments, il s'agit des arguments du ***reader*** :
+
+* un string filename
+* un int flags
+
+Voici un exemple de chainage  :
+
+    flux hash_to_string :
+        hash = listener address_to_hash (string filename, int flags): int [[filename = "address.csv", flag = 0]] ;
+        hash_str = processor int_to_string (int hash) : string [[hash = hash]] ;
+        writer write_file (string filename, string hash): string [[filename = "hash_str.csv", hash = hash_str]] ;
 
 ![Triplet flux](flux.png "Triplet flux")
+
+La valorisation des arguments des flux sera vue dans un article dédié.
+
+Ainsi se fini mon premier article sur le langage Thoddlang.
+Je remercie l'ensemble des personnes ayant participé à la relecture de cette publication.
