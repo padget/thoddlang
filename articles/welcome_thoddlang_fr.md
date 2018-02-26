@@ -1,4 +1,6 @@
-# Bienvenue sur Thoddlang.org
+---
+title: Bienvenue sur Thoddlang.org
+---
 
 Ceci est mon premier article de blog.
 
