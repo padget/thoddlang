@@ -6,15 +6,15 @@ Ceci est mon premier article de blog.
 
 Thoddlang (Thodd de son petit nom) est avant tout un langage de programmation par flux et fonctionnel qui vise à la simplicité et l'élégance du développement favorisant ainsi la maintenabilité et réutilisabilité du code.
 
-Thodd permet de modéliser les traitements des flux de données de manière aussi pure fonctionnellement que possible. Les interactions avec les IO (socket, fichier, ...) sont cloisonnées dans certains types de fonctions (***reader, writer, listener*** et ***processor***).
+Thodd permet de modéliser les traitements des flux de données de manière aussi pure fonctionnellement que possible. Les interactions avec les IO (socket, fichier, ...) sont cloisonnées dans certains types de fonctions (***reader, writer, listener***).
 
-Quant à la modélisation des données, Thodd met à disposition la classique structure (*struct*) présent dans bon nombre de langage (c, c++, java, ...). Un ensemble de type dit natif est a disposition pour permettre la composition de ceux-ci dans des structures plus complexe. On parlera de type axiomatique.
+Quant à la modélisation des données, Thodd met à disposition la classique structure (*struct*) présent dans bon nombre de langage (c, c++, java, ...). Un ensemble de type dit natif est a disposition pour permettre la composition de ceux-ci dans des structures plus complexes. On parlera de **type axiomatique**.
 
-De même qu'il existe des types axiomatiques, Thodd possède un ensemble de fonctions de base (les fonctions axiomatiques) qui permettent les opérations de base nécessaires au développement des programmes modernes (fonctions arithmétiques, booléennes, les *reader* natifs (socket, file), les *writer* natifs, ...).
+De même qu'il existe des types axiomatiques, Thodd possède un ensemble de fonctions de base (les fonctions axiomatiques) qui permettent les opérations de base nécessaires au développement des programmes modernes (fonctions arithmétiques, booléennes, les ***reader|listener*** natifs (socket, file), les ***writer*** natifs, ...).
 
-Enfin, contrairement à de nombreux langages fonctionnels pures, Thodd permet la construction des données en plusieurs étapes, ne respectant ainsi pas entièrement le principe d'*immutabilité* cher aux autres langages fonctionnel. Cette constructions multiphase se fait au travers de fonctions dite ***builder***.
+Enfin, contrairement à de nombreux langages fonctionnels purs, Thodd permet la construction des données en plusieurs étapes, ne respectant ainsi pas entièrement le principe d'*immutabilité* cher aux autres langages fonctionnel. Cette construction multiphase se fait au travers de fonctions dites ***builder***.
 
-Enfin (encore ? :D), Thodd innove en permettant plusieurs *"main"* (plusieurs points d'entrée) au sein du même programme. Le mot ***main*** n'est donc pas un nom de fonction comme en C, mais un mot clé qui peut être apposé sur toute fonction dite ***listener*** ou bien ***reader***.
+Enfin (encore ? :D), Thodd innove en permettant plusieurs *"main"* (plusieurs points d'entrée) au sein du même programme. Le mot ***main*** n'est donc pas un nom de fonction comme en C, mais un mot clé qui peut être apposé sur toute fonction dite ***listener*** ou bien ***reader***. On entrevoit ici la génération de plusieurs processus (un par ***main***) favorisant un développement de Micro(Nano ?)-services.
 
 Voilà, ce qu'est Thodd.
 
@@ -30,7 +30,7 @@ Nous l'évoquions dans la présentation de Thodd, il possède plusieurs types de
 
 ### ***Reader***
 
-Un ***reader*** est une fonction permettant d'extraire une donnée depuis un flux (socket, fichier, entrée standard, ...) :
+Un ***reader*** est une fonction permettant d'extraire une donnée depuis un flux (socket, fichier, entrée standard, mémoire, ...) :
 
     reader read_socket(string ip, int flags): bytes ;
 
@@ -60,7 +60,7 @@ Il existe une fonction ***listener*** axiomatique equivalente pour chacun des **
 
 ### ***Processor***
 
-Les fonctions ***processor*** réprésentent le scope fonctionnelle pure de Thodd. Quand on est dans le contexte de ces fonctions, on ne peut faire appel qu'à d'autres fonctions ***processor*** ou bien ***builder***. Il s'agit d'une erreur de compilation que de faire appel à tout autre type de fonction. Les effets de bords sont ainsi évités au sein des ***processor*** et éliminant ainsi un ensemble de bugs classiques de la programmation.
+Les fonctions ***processor*** réprésentent le scope fonctionnel pur de Thodd. Quand on est dans le contexte de ces fonctions, on ne peut faire appel qu'à d'autres fonctions ***processor*** ou bien ***builder***. Il s'agit d'une erreur de compilation que de faire appel à tout autre type de fonction. Les effets de bords sont ainsi évités au sein des ***processor*** et éliminant ainsi un ensemble de bugs classiques de la programmation.
 
 OK, mais c'est quoi un ***processor*** ?
 
@@ -80,20 +80,20 @@ Comme son nom l'indique, un ***writer*** est un type de fonction permettant l'é
 
 ## Définition d'un flux
 
-Un flux se compose de trois parties bien distinctes : 
+Un flux se compose de trois parties bien distinctes :
 
 * un ***reader|listener***
 * un ***processor*** (optionnel)
 * un ***writer***
 
-Thodd fournit une syntaxe particulière pour la déclration d'un flux. 
+Thodd fournit une syntaxe particulière pour la déclaration d'un flux.
 
-    flux address_csv_to_hash:
+    flow address_csv_to_hash:
         addr = listener read_file(string filename, int flags): string [[flags = 0]];
         hash = processor address_to_hash(string addr): int [[addr = addr]] ;
         writer write_file (string filename, int hash) : int [[filename = "hash.csv", hash = hash]] ;
 
-On peut combiner des flux entre eux en voyant un flux comme une source de donnée potentielle pour un autre flux. Dans notre exemple précédent nous avons déclarer le flux *address_csv_to_hash*. Celui ci peut peut être utilisé comme reader pour un autre flux. Le ***reader*** equivalent serait :
+On peut combiner des flux entre eux en voyant un flux comme une source de donnée potentielle pour un autre flux. Dans notre exemple précédent nous avons déclarer le flux *address_csv_to_hash*. Celui ci peut peut être utilisé comme ***reader*** pour un autre flux. Le ***reader*** équivalent serait :
 
     listener address_csv_to_hash (string filename, int flags) : int ;
 
@@ -104,14 +104,27 @@ On peut combiner des flux entre eux en voyant un flux comme une source de donné
 
 Voici un exemple de chainage  :
 
-    flux hash_to_string :
+    flow hash_to_string :
         hash = listener address_to_hash (string filename, int flags): int [[filename = "address.csv", flag = 0]] ;
         hash_str = processor int_to_string (int hash) : string [[hash = hash]] ;
         writer write_file (string filename, string hash): string [[filename = "hash_str.csv", hash = hash_str]] ;
 
-![Triplet flux](flux.png "Triplet flux")
-
 La valorisation des arguments des flux sera vue dans un article dédié.
+
+## Hello World
+
+Voici, comme le veut la tradition, un exemple de type Hello World : 
+
+    processor __concat (string l, string r) : string ;  // __concat est une fonction axiomatique
+
+    processor concat_hello_and_name (string name) : string {
+        return __concat ("hello ", name) ;
+    }
+
+    main flow hello_world :
+        name = reader read_stdin (string name) : string ;
+        message = processor concat_hello_and_name (string name) : string [[name = name]] ;
+        writer write_hello_name_stdout (string message) : string [[message = message]] ;
 
 Ainsi se fini mon premier article sur le langage Thoddlang.
 Je remercie l'ensemble des personnes ayant participé à la relecture de cette publication.
