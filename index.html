@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <style>
+    pre > code{
+      display: block;
+      color: white;
+    }
+
+    pre code {
+      background-color: black;
+     
+    }
+  </style>
+
+  <title>Thoddlang</title>
+</head>
+
+<body class="container">
+  <h1>Bienvenue sur Thoddlang.org</h1>
+  <p>Ceci est mon premier article de blog.</p>
+
+  <h2>Thoddlang c'est avant tout</h2>
+
+  <p>Thoddlang (Thodd de son petit nom) est avant tout un langage de programmation par flux et fonctionnel qui vise à la simplicité
+    et l'élégance du développement favorisant ainsi la maintenabilité et réutilisabilité du code. Thodd permet de modéliser les traitements 
+    des flux de données de manière aussi pure fonctionnellement que possible. Les
+    interactions avec les IO (socket, fichier, ...) sont cloisonnées dans certains types de fonctions (
+    <strong>
+      <em>reader, writer, listener</em>
+    </strong>).</p>
+
+  <p>Quant à la modélisation des données, Thodd met à disposition la classique structure (
+    <em>struct</em>) présent dans bon nombre de langage (c, c++, java, ...). Un ensemble de type dit natif est a disposition
+    pour permettre la composition de ceux-ci dans des structures plus complexes. On parlera de
+    <strong>type axiomatique</strong>.</p>
+
+  <p>De même qu'il existe des types axiomatiques, Thodd possède un ensemble de fonctions de base (les fonctions axiomatiques)
+    qui permettent les opérations de base nécessaires au développement des programmes modernes (fonctions arithmétiques,
+    booléennes, les
+    <strong>
+      <em>reader|listener</em>
+    </strong> natifs (socket, file), les
+    <strong>
+      <em>writer</em>
+    </strong> natifs, ...).</p>
+
+  <p>Enfin, contrairement à de nombreux langages fonctionnels purs, Thodd permet la construction des données en plusieurs étapes,
+    ne respectant ainsi pas entièrement le principe d'
+    <em>immutabilité</em> cher aux autres langages fonctionnel. Cette construction multiphase se fait au travers de fonctions
+    dites
+    <strong>
+      <em>builder</em>
+    </strong>.</p>
+
+  <p>Enfin (encore ? :D), Thodd innove en permettant plusieurs
+    <em>"main"</em> (plusieurs points d'entrée) au sein du même programme. Le mot
+    <strong>
+      <em>main</em>
+    </strong> n'est donc pas un nom de fonction comme en C, mais un mot clé qui peut être apposé sur toute fonction dite
+    <strong>
+      <em>listener</em>
+    </strong> ou bien
+    <strong>
+      <em>reader</em>
+    </strong>. On entrevoit ici la génération de plusieurs processus (un par
+    <strong>
+      <em>main</em>
+    </strong>) favorisant un développement de Micro(Nano ?)-services.</p>
+
+  <p>Voilà, ce qu'est Thodd.</p>
+
+  <h2>Thoddlang et les fonctions : une grande histoire d'amour</h2>
+
+  <p>Nous l'évoquions dans la présentation de Thodd, il possède plusieurs types de fonctions :</p>
+
+  <ul>
+    <li>
+      <strong>
+        <em>reader</em>
+      </strong> : lit une donnée dans le flux.</li>
+    <li>
+      <strong>
+        <em>listener</em>
+      </strong> : écoute
+      <strong>indéfiniment</strong> les données dans le flux.</li>
+    <li>
+      <strong>
+        <em>processor</em>
+      </strong> : transforme / calcule des résultat à partir des données lues / écoutées depuis le flux.</li>
+    <li>
+      <strong>
+        <em>builder</em>
+      </strong> : construit les structures de données pour les
+      <strong>
+        <em>processor</em>
+      </strong>.</li>
+    <li>
+      <strong>
+        <em>writer</em>
+      </strong> : écrit le résultat d'un
+      <strong>
+        <em>processor</em>
+      </strong> ou d'un
+      <strong>
+        <em>reader</em>
+      </strong>/
+      <strong>
+        <em>listener</em>
+      </strong> dans le flux.</li>
+  </ul>
+
+  <h3>
+    <strong>
+      <em>Reader</em>
+    </strong>
+  </h3>
+
+  <p>Un
+    <strong>
+      <em>reader</em>
+    </strong> est une fonction permettant d'extraire une donnée depuis un flux (socket, fichier, entrée standard, mémoire, ...) :</p>
+
+  <pre><code>
+    reader read_socket(string ip, int flags): bytes ;
+    </code></pre>
+
+  <p>Il existe un ensemble de fonctions axiomatiques
+    <strong>
+      <em>reader</em>
+    </strong> permettant d'intéragir avec les flux classiques.</p>
+
+  <pre>
+    <code>
+    reader read_socket (string ip, int flags) : bytes | string | int | ... ;
+    reader read_file (string name, int flags) : bytes | string | int | ... ;
+    reader read_stdin (int flags)             : bytes | string | int | ... ;
+    ...
+    </code>
+  </pre>
+
+  <p>A partir de ces fonctions axiomatiques on peut définir des fonctions plus pratiques pour un développeur moderne (qui aura
+    la volonté d'intéragir avec une socket réseau ? :p ). La création de ces nouveaux
+    <strong>
+      <em>reader</em>
+    </strong> sera vu en détail dans un autre article. A titre d'exemple :</p>
+
+  <pre><code>
+    reader read_mysql_table (mysql_schema schema, string tablename) : table {
+      ... // Définition du reader
+    }
+    </code></pre>
+
+  <h3>
+    <strong>
+      <em>Listener</em>
+    </strong>
+  </h3>
+
+  <p>Les fonctions
+    <strong>
+      <em>listener</em>
+    </strong> sont semblables aux
+    <strong>
+      <em>reader</em>
+    </strong>, mais à la différence de ces dernières, elles lisent en permanence le flux de données. Et quand il n'y a plus de donnée
+    à lire, elles attendent qu'une nouvelle donnée soit écrite sur le flux par un
+    <strong>
+      <em>writer</em>
+    </strong> pour aller la lire.</p>
+
+  <p>Il existe une fonction
+    <strong>
+      <em>listener</em>
+    </strong> axiomatique equivalente pour chacun des
+    <strong>
+      <em>reader</em>
+    </strong> axiomatique fourni par Thodd.</p>
+
+  <pre><code>
+    listener listen_socket (string ip, int flags) : bytes | string | int | ... ;
+    listener listen_file (string name, int flags) : bytes | string | int | ... ;
+    listener listen_stdin (int flags)             : bytes | string | int | ... ;
+    ...
+    </code></pre>
+
+  <h3>
+    <strong>
+      <em>Processor</em>
+    </strong>
+  </h3>
+
+  <p>Les fonctions
+    <strong>
+      <em>processor</em>
+    </strong> réprésentent le scope fonctionnel pur de Thodd. Quand on est dans le contexte de ces fonctions, on ne peut faire appel
+    qu'à d'autres fonctions
+    <strong>
+      <em>processor</em>
+    </strong> ou bien
+    <strong>
+      <em>builder</em>
+    </strong>. Il s'agit d'une erreur de compilation que de faire appel à tout autre type de fonction. Les effets de bords sont ainsi
+    évités au sein des
+    <strong>
+      <em>processor</em>
+    </strong> et éliminant ainsi un ensemble de bugs classiques de la programmation.</p>
+
+  <p>OK, mais c'est quoi un
+    <strong>
+      <em>processor</em>
+    </strong> ?</p>
+
+  <p>Un
+    <strong>
+      <em>processor</em>
+    </strong> est une fonction
+    <strong>pure</strong> au sens mathématique du terme :
+    <strong>n entrées, UNE sortie, PAS D'EFFET DE BORD</strong>.</p>
+
+  <pre><code>
+    processor increment (int nb, int pas) {
+      return __add (nb, pas) ;
+    }
+    </code></pre>
+
+  <h3>
+    <strong>
+      <em>Builder</em>
+    </strong>
+  </h3>
+
+  <p>Les fonctions
+    <strong>
+      <em>builder</em>
+    </strong>, probablement la famille de fonctions qui risque de faire grincer des dents les puristes des langages fonctionnels.
+    Il s'agit de fonction permettant de construire une donnée en plusieurs étapes (plusieurs appel de fonction
+    <strong>
+      <em>builder</em>
+    </strong>), mais tout de même avec un contrôle pour garantir l'absence de tout effet de bord. En dehors d'un builder, la donnée
+    construite sera immutable.</p>
+
+  <h3>
+    <strong>
+      <em>Writer</em>
+    </strong>
+  </h3>
+
+  <p>Comme son nom l'indique, un
+    <strong>
+      <em>writer</em>
+    </strong> est un type de fonction permettant l'écriture de données dans un flux. Il existe un
+    <strong>
+      <em>writer</em>
+    </strong> axiomatique par
+    <strong>
+      <em>writer|listener</em>
+    </strong> axiomatique existant.</p>
+
+  <h2>Définition d'un flux</h2>
+
+  <p>Un flux se compose de trois parties bien distinctes :</p>
+
+  <ul>
+    <li>un
+      <strong>
+        <em>reader|listener</em>
+      </strong>
+    </li>
+    <li>un
+      <strong>
+        <em>processor</em>
+      </strong> (optionnel)</li>
+    <li>un
+      <strong>
+        <em>writer</em>
+      </strong>
+    </li>
+  </ul>
+
+  <p>Thodd fournit une syntaxe particulière pour la déclaration d'un flux.</p>
+
+  <pre><code>
+    flow address_csv_to_hash:
+        addr = listener read_file(string filename, int flags): string [[flags = 0]];
+        hash = processor address_to_hash(string addr): int [[addr = addr]] ;
+        writer write_file (string filename, int hash) : int [[filename = "hash.csv", hash = hash]] ;
+    </code></pre>
+
+  <p>On peut combiner des flux entre eux en voyant un flux comme une source de donnée potentielle pour un autre flux. Dans notre
+    exemple précédent nous avons déclarer le flux
+    <em>address_csv_to_hash</em>. Celui ci peut peut être utilisé comme
+    <strong>
+      <em>reader</em>
+    </strong> pour un autre flux. Le
+    <strong>
+      <em>reader</em>
+    </strong> équivalent serait :</p>
+
+  <pre><code>
+    listener address_csv_to_hash (string filename, int flags) : int ;
+    </code></pre>
+
+  <p>
+    <em>address_csv_to_hash</em> est un
+    <strong>
+      <em>listener</em>
+    </strong> car le flux sous-jacent commence par un
+    <strong>
+      <em>listener</em>
+    </strong>. La sortie est un
+    <strong>
+      <em>int</em>
+    </strong> car la sortie du
+    <strong>
+      <em>writer</em>
+    </strong> est
+    <strong>
+      <em>int</em>
+    </strong>. Quand aux arguments, il s'agit des arguments du
+    <strong>
+      <em>reader</em>
+    </strong> :</p>
+
+  <ul>
+    <li>un string filename</li>
+    <li>un int flags</li>
+  </ul>
+
+  <p>Voici un exemple de chainage :</p>
+
+  <pre><code>
+    flow hash_to_string :
+        hash = listener address_to_hash (string filename, int flags): int [[filename = "address.csv", flag = 0]] ;
+        hash_str = processor int_to_string (int hash) : string [[hash = hash]] ;
+        writer write_file (string filename, string hash): string [[filename = "hash_str.csv", hash = hash_str]] ;
+    </code></pre>
+
+  <p>La valorisation des arguments des flux sera vue dans un article dédié.</p>
+
+  <h2>Hello World</h2>
+
+  <p>Voici, comme le veut la tradition, un exemple de type Hello World : </p>
+
+  <pre><code>
+    processor __concat (string l, string r) : string ;  // __concat est une fonction axiomatique
+    
+    processor concat_hello_and_name (string name) : string {
+        return __concat ("hello ", name) ;
+    }
+    
+    main flow hello_world :
+        name = reader read_stdin (string name) : string ;
+        message = processor concat_hello_and_name (string name) : string [[name = name]] ;
+        writer write_hello_name_stdout (string message) : string [[message = message]] ;
+    </code></pre>
+
+  <p>Ainsi se fini mon premier article sur le langage Thoddlang. Je remercie l'ensemble des personnes ayant participé à la relecture
+    de cette publication.</p>
+
+
+
+
+
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
